@@ -15,3 +15,4 @@ duckdb
 kreuzberg>=4.0.0rc1
 sentence-transformers
 modelscope
+oss2

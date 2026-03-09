@@ -6,6 +6,12 @@ Usage:
     sirchmunk init              - Initialize working directory + generate .env
     sirchmunk serve             - Start the API server (backend only)
     sirchmunk search            - Perform a search query
+    sirchmunk oss init          - Initialize OSS cache configuration
+    sirchmunk oss sync          - Sync OSS metadata to local cache
+    sirchmunk oss search        - Search OSS with hybrid cache
+    sirchmunk cache stats       - Show cache statistics
+    sirchmunk cache clear       - Clear all cached files
+    sirchmunk cache evict       - Trigger LRU cache eviction
     sirchmunk web init          - Build WebUI frontend (requires Node.js)
     sirchmunk web serve         - Start API + WebUI (single port)
     sirchmunk web serve --dev   - Start API + Next.js dev server (dual port)
@@ -1041,6 +1047,411 @@ def cmd_version(args: argparse.Namespace) -> int:
 
 
 # ------------------------------------------------------------------
+# sirchmunk oss init
+# ------------------------------------------------------------------
+
+def cmd_oss_init(args: argparse.Namespace) -> int:
+    """Initialize OSS cache configuration.
+
+    Args:
+        args: Command-line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        work_path = Path(args.work_path).expanduser().resolve()
+        config_dir = work_path / ".cache" / "settings"
+        config_dir.mkdir(parents=True, exist_ok=True)
+
+        config_file = config_dir / "cache_config.yaml"
+
+        if config_file.exists():
+            print(f"  Configuration file already exists: {config_file}")
+            print("   Use --force to overwrite")
+            return 1
+
+        from sirchmunk.storage.oss_cache_manager import CacheConfig
+
+        config = CacheConfig(
+            local_disk_size_gb=args.disk_size,
+            cache_ratio=args.cache_ratio,
+            hot_file_ratio=args.hot_ratio,
+            max_single_file_mb=args.max_file_size,
+            cache_ttl_hours=args.ttl,
+        )
+        config.to_yaml(str(config_file))
+
+        print(f"  OSS cache configuration initialized: {config_file}")
+        print(f"   Disk size: {args.disk_size}GB")
+        print(f"   Max cache: {config.max_cache_bytes / 1024**3:.2f}GB")
+        print(f"   Hot cache: {config.hot_cache_bytes / 1024**3:.2f}GB")
+
+        return 0
+
+    except Exception as e:
+        logger.error(f"OSS init failed: {e}", exc_info=True)
+        print(f"  OSS init failed: {e}")
+        return 1
+
+
+# ------------------------------------------------------------------
+# sirchmunk oss sync
+# ------------------------------------------------------------------
+
+async def _oss_sync_metadata(args: argparse.Namespace) -> int:
+    """Sync OSS metadata to local DuckDB cache.
+
+    Args:
+        args: Command-line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        work_path = Path(args.work_path).expanduser().resolve()
+        env_file = work_path / ".env"
+        if env_file.exists():
+            _load_env_file(env_file)
+
+        # Load OSS configuration from environment
+        oss_bucket = os.getenv("OSS_BUCKET", "")
+        oss_endpoint = os.getenv("OSS_ENDPOINT", "")
+        oss_access_key_id = os.getenv("OSS_ACCESS_KEY_ID", "")
+        oss_access_key_secret = os.getenv("OSS_ACCESS_KEY_SECRET", "")
+
+        if not oss_bucket:
+            print("  OSS_BUCKET is not set in .env")
+            return 1
+
+        cache_config_file = work_path / ".cache" / "settings" / "cache_config.yaml"
+        if cache_config_file.exists():
+            from sirchmunk.storage.oss_cache_manager import CacheConfig
+            config = CacheConfig.from_yaml(str(cache_config_file))
+        else:
+            from sirchmunk.storage.oss_cache_manager import CacheConfig
+            config = CacheConfig()
+
+        from sirchmunk.storage.oss_cache_manager import OSSCacheManager
+
+        cache_manager = OSSCacheManager(
+            oss_bucket=oss_bucket,
+            oss_endpoint=oss_endpoint,
+            oss_access_key_id=oss_access_key_id,
+            oss_access_key_secret=oss_access_key_secret,
+            local_cache_dir=work_path / ".cache",
+            config=config,
+            verbose=args.verbose,
+        )
+
+        print(f"  Syncing OSS metadata from bucket: {oss_bucket}")
+        if args.prefix:
+            print(f"   Prefix: {args.prefix}")
+
+        await cache_manager.sync_metadata(oss_prefix=args.prefix or None)
+
+        stats = await cache_manager.metadata_store.get_stats()
+        print(f"  Sync complete: {stats['total_objects']} objects, {stats['total_size_gb']:.2f}GB")
+
+        return 0
+
+    except Exception as e:
+        logger.error(f"OSS sync failed: {e}", exc_info=True)
+        print(f"  OSS sync failed: {e}")
+        return 1
+
+
+def cmd_oss_sync(args: argparse.Namespace) -> int:
+    """Wrapper for async OSS sync."""
+    return asyncio.run(_oss_sync_metadata(args))
+
+
+# ------------------------------------------------------------------
+# sirchmunk oss search
+# ------------------------------------------------------------------
+
+async def _oss_search(args: argparse.Namespace) -> int:
+    """Search OSS with hybrid cache architecture.
+
+    Args:
+        args: Command-line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        work_path = Path(args.work_path).expanduser().resolve()
+        env_file = work_path / ".env"
+        if env_file.exists():
+            _load_env_file(env_file)
+
+        # Load OSS configuration
+        oss_bucket = os.getenv("OSS_BUCKET", "")
+        oss_endpoint = os.getenv("OSS_ENDPOINT", "")
+        oss_access_key_id = os.getenv("OSS_ACCESS_KEY_ID", "")
+        oss_access_key_secret = os.getenv("OSS_ACCESS_KEY_SECRET", "")
+
+        if not oss_bucket:
+            print("  OSS_BUCKET is not set in .env")
+            return 1
+
+        cache_config_file = work_path / ".cache" / "settings" / "cache_config.yaml"
+        if cache_config_file.exists():
+            from sirchmunk.storage.oss_cache_manager import CacheConfig
+            config = CacheConfig.from_yaml(str(cache_config_file))
+        else:
+            from sirchmunk.storage.oss_cache_manager import CacheConfig
+            config = CacheConfig()
+
+        from sirchmunk.storage.oss_cache_manager import OSSCacheManager
+
+        cache_manager = OSSCacheManager(
+            oss_bucket=oss_bucket,
+            oss_endpoint=oss_endpoint,
+            oss_access_key_id=oss_access_key_id,
+            oss_access_key_secret=oss_access_key_secret,
+            local_cache_dir=work_path / ".cache",
+            config=config,
+            verbose=args.verbose,
+        )
+
+        print(f"  Searching OSS for: {args.query}")
+        print(f"   Bucket: {oss_bucket}")
+        if args.prefix:
+            print(f"   Prefix: {args.prefix}")
+        if args.file_types:
+            print(f"   File types: {args.file_types}")
+
+        # Prepare search context (downloads candidate files to cache)
+        ctx = await cache_manager.prepare_search_context(
+            query=args.query,
+            oss_prefix=args.prefix or None,
+            file_types=args.file_types,
+            max_files=args.max_files,
+            max_total_size_mb=args.max_size,
+        )
+
+        # Execute search with rga
+        import subprocess
+        import shutil
+
+        rga_path = shutil.which("rga")
+        if not rga_path:
+            print("  rga (ripgrep-all) not found in PATH")
+            return 1
+
+        search_paths = [str(p) for p in ctx.search_paths]
+        print(f"   Searching {len(ctx.downloaded_files)} cached files...")
+
+        result = subprocess.run(
+            [rga_path, "--json", args.query] + search_paths,
+            capture_output=True,
+            text=True,
+        )
+
+        if result.returncode == 0:
+            import json
+            matches = json.loads(result.stdout) if result.stdout else []
+            print(f"\n  Found {len(matches)} matches:")
+            for match in matches[:args.top_k]:
+                path = match.get("path", "")
+                text = match.get("lines", {}).get("text", "")
+                print(f"   - {path}: {text[:100]}...")
+        else:
+            print("  No matches found")
+
+        # Print cache stats
+        stats = cache_manager.get_cache_stats()
+        print(f"\n  Cache stats: {stats['cached_files_count']} files, {stats['current_size_mb']:.1f}MB / {stats['max_size_mb']:.1f}MB")
+
+        return 0
+
+    except Exception as e:
+        logger.error(f"OSS search failed: {e}", exc_info=True)
+        print(f"  OSS search failed: {e}")
+        return 1
+
+
+def cmd_oss_search(args: argparse.Namespace) -> int:
+    """Wrapper for async OSS search."""
+    return asyncio.run(_oss_search(args))
+
+
+# ------------------------------------------------------------------
+# sirchmunk cache stats
+# ------------------------------------------------------------------
+
+def cmd_cache_stats(args: argparse.Namespace) -> int:
+    """Show cache statistics.
+
+    Args:
+        args: Command-line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        work_path = Path(args.work_path).expanduser().resolve()
+
+        # Load OSS configuration
+        cache_config_file = work_path / ".cache" / "settings" / "cache_config.yaml"
+        if not cache_config_file.exists():
+            print("  No cache configuration found")
+            print("   Run: sirchmunk oss init")
+            return 1
+
+        from sirchmunk.storage.oss_cache_manager import CacheConfig
+        config = CacheConfig.from_yaml(str(cache_config_file))
+
+        # Calculate actual cache usage
+        cache_dir = work_path / ".cache" / ".cache" / "rga" / "files"
+        actual_size = 0
+        file_count = 0
+        if cache_dir.exists():
+            for f in cache_dir.rglob("*"):
+                if f.is_file():
+                    actual_size += f.stat().st_size
+                    file_count += 1
+
+        print("=" * 60)
+        print("  OSS Cache Statistics")
+        print("=" * 60)
+        print()
+        print(f"  Configuration:")
+        print(f"   Disk size: {config.local_disk_size_gb}GB")
+        print(f"   Cache ratio: {config.cache_ratio}")
+        print(f"   Hot file ratio: {config.hot_file_ratio}")
+        print(f"   Max single file: {config.max_single_file_mb}MB")
+        print(f"   Cache TTL: {config.cache_ttl_hours}h")
+        print()
+        print(f"  Calculated limits:")
+        print(f"   Max cache: {config.max_cache_bytes / 1024**3:.2f}GB ({config.max_cache_bytes / 1024**2:.1f}MB)")
+        print(f"   Hot cache: {config.hot_cache_bytes / 1024**3:.2f}GB ({config.hot_cache_bytes / 1024**2:.1f}MB)")
+        print()
+        print(f"  Current usage:")
+        print(f"   Files cached: {file_count}")
+        print(f"   Size: {actual_size / 1024**2:.1f}MB")
+        print(f"   Usage ratio: {actual_size / max(config.max_cache_bytes, 1) * 100:.1f}%")
+        print()
+
+        return 0
+
+    except Exception as e:
+        logger.error(f"Cache stats failed: {e}", exc_info=True)
+        print(f"  Cache stats failed: {e}")
+        return 1
+
+
+# ------------------------------------------------------------------
+# sirchmunk cache clear
+# ------------------------------------------------------------------
+
+def cmd_cache_clear(args: argparse.Namespace) -> int:
+    """Clear OSS cache.
+
+    Args:
+        args: Command-line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        work_path = Path(args.work_path).expanduser().resolve()
+        cache_dir = work_path / ".cache" / ".cache" / "rga" / "files"
+
+        if not cache_dir.exists():
+            print("  Cache directory is empty")
+            return 0
+
+        import shutil
+        cleared = 0
+        for f in cache_dir.rglob("*"):
+            if f.is_file():
+                f.unlink()
+                cleared += 1
+
+        print(f"  Cleared {cleared} files from cache")
+        return 0
+
+    except Exception as e:
+        logger.error(f"Cache clear failed: {e}", exc_info=True)
+        print(f"  Cache clear failed: {e}")
+        return 1
+
+
+# ------------------------------------------------------------------
+# sirchmunk cache evict
+# ------------------------------------------------------------------
+
+def cmd_cache_evict(args: argparse.Namespace) -> int:
+    """Manually trigger cache eviction.
+
+    Args:
+        args: Command-line arguments
+
+    Returns:
+        Exit code
+    """
+    try:
+        work_path = Path(args.work_path).expanduser().resolve()
+
+        # Load OSS configuration
+        cache_config_file = work_path / ".cache" / "settings" / "cache_config.yaml"
+        if not cache_config_file.exists():
+            print("  No cache configuration found")
+            return 1
+
+        from sirchmunk.storage.oss_cache_manager import CacheConfig
+        config = CacheConfig.from_yaml(str(cache_config_file))
+
+        cache_dir = work_path / ".cache" / ".cache" / "rga" / "files"
+
+        if not cache_dir.exists():
+            print("  Cache directory is empty")
+            return 0
+
+        # Calculate current usage
+        actual_size = 0
+        for f in cache_dir.rglob("*"):
+            if f.is_file():
+                actual_size += f.stat().st_size
+
+        target_bytes = int(config.max_cache_bytes * args.target_ratio)
+
+        if actual_size <= target_bytes:
+            print(f"  Cache usage ({actual_size / 1024**2:.1f}MB) is already below target ({target_bytes / 1024**2:.1f}MB)")
+            return 0
+
+        print(f"  Current: {actual_size / 1024**2:.1f}MB, Target: {target_bytes / 1024**2:.1f}MB")
+        print("  Evicting oldest files...")
+
+        # Simple LRU: remove oldest files first (by mtime)
+        files_with_mtime = []
+        for f in cache_dir.rglob("*"):
+            if f.is_file():
+                files_with_mtime.append((f, f.stat().st_mtime, f.stat().st_size))
+
+        files_with_mtime.sort(key=lambda x: x[1])  # Sort by mtime (oldest first)
+
+        evicted = 0
+        evicted_bytes = 0
+        for f, mtime, size in files_with_mtime:
+            if actual_size - evicted_bytes <= target_bytes:
+                break
+            f.unlink()
+            evicted += 1
+            evicted_bytes += size
+
+        print(f"  Evicted {evicted} files ({evicted_bytes / 1024**2:.1f}MB)")
+        return 0
+
+    except Exception as e:
+        logger.error(f"Cache eviction failed: {e}", exc_info=True)
+        print(f"  Cache eviction failed: {e}")
+        return 1
+
+
+# ------------------------------------------------------------------
 # Parser construction
 # ------------------------------------------------------------------
 
@@ -1060,6 +1471,10 @@ Examples:
   sirchmunk serve                   Start API server (backend only)
   sirchmunk search "find auth"      Search in current directory
   sirchmunk search "bug" ./src      Search in specific path
+  sirchmunk oss init                Initialize OSS cache configuration
+  sirchmunk oss sync                Sync OSS metadata to local cache
+  sirchmunk oss search "auth"       Search OSS with hybrid cache
+  sirchmunk cache stats             Show cache statistics
   sirchmunk web init                Build WebUI frontend (requires Node.js)
   sirchmunk web serve               Start API + WebUI (single port)
   sirchmunk web serve --dev         Start API + Next.js dev server
@@ -1178,6 +1593,92 @@ Examples:
     )
     mcp_version_parser.set_defaults(func=cmd_mcp_version)
 
+    # === oss command group ===
+    oss_parser = subparsers.add_parser(
+        "oss",
+        help="OSS hybrid architecture commands",
+        description="Manage OSS hybrid search cache and metadata.",
+    )
+    oss_subparsers = oss_parser.add_subparsers(dest="oss_command", help="OSS sub-commands")
+
+    # sirchmunk oss init
+    oss_init_parser = oss_subparsers.add_parser(
+        "init",
+        help="Initialize OSS cache configuration",
+        description="Create cache configuration file for OSS hybrid architecture.",
+    )
+    oss_init_parser.add_argument("--work-path", default=str(_get_default_work_path()), help="Working directory")
+    oss_init_parser.add_argument("--disk-size", type=float, default=200.0, help="Local disk size in GB (default: 200)")
+    oss_init_parser.add_argument("--cache-ratio", type=float, default=0.8, help="Cache ratio (default: 0.8)")
+    oss_init_parser.add_argument("--hot-ratio", type=float, default=0.7, help="Hot file ratio (default: 0.7)")
+    oss_init_parser.add_argument("--max-file-size", type=float, default=50.0, help="Max single file size in MB (default: 50)")
+    oss_init_parser.add_argument("--ttl", type=float, default=24.0, help="Cache TTL in hours (default: 24)")
+    oss_init_parser.add_argument("--force", action="store_true", help="Overwrite existing config")
+    oss_init_parser.set_defaults(func=cmd_oss_init)
+
+    # sirchmunk oss sync
+    oss_sync_parser = oss_subparsers.add_parser(
+        "sync",
+        help="Sync OSS metadata to local cache",
+        description="Sync OSS object metadata to local DuckDB cache.",
+    )
+    oss_sync_parser.add_argument("--work-path", default=str(_get_default_work_path()), help="Working directory")
+    oss_sync_parser.add_argument("--prefix", help="OSS prefix to sync (optional)")
+    oss_sync_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    oss_sync_parser.set_defaults(func=cmd_oss_sync)
+
+    # sirchmunk oss search
+    oss_search_parser = oss_subparsers.add_parser(
+        "search",
+        help="Search OSS with hybrid cache",
+        description="Search OSS objects using the hybrid cache architecture.",
+    )
+    oss_search_parser.add_argument("query", help="Search query")
+    oss_search_parser.add_argument("--work-path", default=str(_get_default_work_path()), help="Working directory")
+    oss_search_parser.add_argument("--prefix", help="OSS prefix to search")
+    oss_search_parser.add_argument("--file-types", nargs="*", help="File types to filter")
+    oss_search_parser.add_argument("--max-files", type=int, default=1000, help="Max files to cache")
+    oss_search_parser.add_argument("--max-size", type=float, default=500.0, help="Max total size in MB")
+    oss_search_parser.add_argument("--top-k", type=int, default=10, help="Top K results to show")
+    oss_search_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    oss_search_parser.set_defaults(func=cmd_oss_search)
+
+    # === cache command group ===
+    cache_parser = subparsers.add_parser(
+        "cache",
+        help="Cache management commands",
+        description="Manage local cache for OSS hybrid architecture.",
+    )
+    cache_subparsers = cache_parser.add_subparsers(dest="cache_command", help="Cache sub-commands")
+
+    # sirchmunk cache stats
+    cache_stats_parser = cache_subparsers.add_parser(
+        "stats",
+        help="Show cache statistics",
+        description="Display cache usage and configuration.",
+    )
+    cache_stats_parser.add_argument("--work-path", default=str(_get_default_work_path()), help="Working directory")
+    cache_stats_parser.set_defaults(func=cmd_cache_stats)
+
+    # sirchmunk cache clear
+    cache_clear_parser = cache_subparsers.add_parser(
+        "clear",
+        help="Clear cache",
+        description="Clear all cached files.",
+    )
+    cache_clear_parser.add_argument("--work-path", default=str(_get_default_work_path()), help="Working directory")
+    cache_clear_parser.set_defaults(func=cmd_cache_clear)
+
+    # sirchmunk cache evict
+    cache_evict_parser = cache_subparsers.add_parser(
+        "evict",
+        help="Evict cache entries",
+        description="Manually trigger LRU cache eviction.",
+    )
+    cache_evict_parser.add_argument("--work-path", default=str(_get_default_work_path()), help="Working directory")
+    cache_evict_parser.add_argument("--target-ratio", type=float, default=0.7, help="Target cache ratio (default: 0.7)")
+    cache_evict_parser.set_defaults(func=cmd_cache_evict)
+
     # === version command ===
     version_parser = subparsers.add_parser("version", help="Show version information")
     version_parser.set_defaults(func=cmd_version)
@@ -1221,6 +1722,26 @@ def run_cmd():
                 mcp_parser = action.choices.get("mcp")
                 if mcp_parser:
                     mcp_parser.print_help()
+                    break
+        sys.exit(0)
+
+    # Handle `sirchmunk oss` without sub-command
+    if args.command == "oss" and not getattr(args, "oss_command", None):
+        for action in parser._subparsers._actions:
+            if isinstance(action, argparse._SubParsersAction):
+                oss_parser = action.choices.get("oss")
+                if oss_parser:
+                    oss_parser.print_help()
+                    break
+        sys.exit(0)
+
+    # Handle `sirchmunk cache` without sub-command
+    if args.command == "cache" and not getattr(args, "cache_command", None):
+        for action in parser._subparsers._actions:
+            if isinstance(action, argparse._SubParsersAction):
+                cache_parser = action.choices.get("cache")
+                if cache_parser:
+                    cache_parser.print_help()
                     break
         sys.exit(0)
 

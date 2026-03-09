@@ -1,0 +1,24 @@
+# sirchmunk/config/cache_config.yaml
+# OSS Hybrid Architecture Cache Configuration
+# See docs/oss-hybrid-architecture.md for details
+
+cache:
+  # 本地磁盘大小 (GB) - **部署时必须配置**
+  # Must be configured at deployment time to match EAS disk size
+  local_disk_size_gb: 200
+
+  # 缓存占磁盘比例 (0.0-1.0)
+  # Recommended: 0.7-0.9
+  cache_ratio: 0.8
+
+  # 热文件占缓存比例 (0.0-1.0)
+  # Recommended: 0.6-0.8
+  hot_file_ratio: 0.7
+
+  # 单文件缓存上限 (MB)
+  # Recommended: 20-100 depending on use case
+  max_single_file_mb: 50
+
+  # 缓存 TTL (小时)
+  # Recommended: 12-48
+  cache_ttl_hours: 24

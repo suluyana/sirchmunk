@@ -1,0 +1,51 @@
+{
+  "database": {
+    "type": "duckdb",
+    "path": "~/.sirchmunk/.cache/metadata/knowledge.db",
+    "settings": {
+      "max_connections": 10,
+      "pool_size": 5,
+      "timeout_seconds": 30
+    }
+  },
+  "embedding": {
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "dimension": 384,
+    "batch_size": 32,
+    "device": "cpu",
+    "cache_dir": "~/.sirchmunk/.cache/models"
+  },
+  "storage": {
+    "work_path": "~/.sirchmunk",
+    "data_dir": "data",
+    "logs_dir": "logs",
+    "cache_dir": ".cache"
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8584,
+    "cors_origins": ["http://localhost:8585", "http://localhost:3000"],
+    "rate_limit": {
+      "requests_per_minute": 60,
+      "requests_per_day": 10000
+    },
+    "auth": {
+      "enabled": true,
+      "header": "X-API-Key",
+      "validate_url": "/api/v1/auth/validate"
+    }
+  },
+  "features": {
+    "web_search": true,
+    "file_upload": true,
+    "knowledge_clusters": true,
+    "query_suggestions": true,
+    "search_analytics": true
+  },
+  "limits": {
+    "max_query_length": 1000,
+    "max_upload_size_mb": 100,
+    "max_results": 100,
+    "max_context_files": 50
+  }
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户指南 - Sirchmunk</title>
+    <style>
+        body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .content { background: white; max-width: 900px; margin: 0 auto; padding: 40px; border-radius: 12px; }
+        h1 { color: #667eea; }
+        h2 { color: #764ba2; margin-top: 30px; }
+        .step { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #667eea; }
+        .step-number { display: inline-block; width: 30px; height: 30px; background: #667eea; color: white; text-align: center; line-height: 30px; border-radius: 50%; margin-right: 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #667eea; color: white; }
+        tr:nth-child(even) { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Sirchmunk 用户指南</h1>
+        <p>欢迎使用 Sirchmunk 企业智能搜索系统</p>
+
+        <h2>快速入门</h2>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>安装</strong>
+            <p>使用 pip 安装 Sirchmunk：</p>
+            <code>pip install sirchmunk</code>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>初始化配置</strong>
+            <p>运行初始化命令创建配置文件：</p>
+            <code>sirchmunk init</code>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>配置 LLM</strong>
+            <p>编辑 ~/.sirchmunk/.env 文件，设置您的 LLM API 密钥</p>
+        </div>
+
+        <h2>命令行使用</h2>
+        <table>
+            <tr>
+                <th>命令</th>
+                <th>说明</th>
+                <th>示例</th>
+            </tr>
+            <tr>
+                <td>search</td>
+                <td>执行搜索</td>
+                <td>sirchmunk search "认证流程"</td>
+            </tr>
+            <tr>
+                <td>serve</td>
+                <td>启动 API 服务</td>
+                <td>sirchmunk serve --port 8584</td>
+            </tr>
+            <tr>
+                <td>cache stats</td>
+                <td>查看缓存状态</td>
+                <td>sirchmunk cache stats</td>
+            </tr>
+        </table>
+
+        <h2>常见问题</h2>
+        <dl>
+            <dt>Q: 如何清除缓存？</dt>
+            <dd>A: 运行 <code>sirchmunk cache clear</code></dd>
+
+            <dt>Q: 支持哪些文件格式？</dt>
+            <dd>A: PDF、DOCX、PPTX、TXT、MD、代码文件等 50+ 种格式</dd>
+
+            <dt>Q: 如何配置 OSS？</dt>
+            <dd>A: 运行 <code>sirchmunk oss init</code> 进行配置</dd>
+        </dl>
+    </div>
+</body>
+</html>

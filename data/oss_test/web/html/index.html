@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirchmunk - Enterprise Search Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        code { background: #f8f8f8; padding: 2px 6px; border-radius: 3px; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+        .warning { background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sirchmunk Documentation</h1>
+        <p>Welcome to the official Sirchmunk documentation portal.</p>
+
+        <h2>Getting Started</h2>
+        <p>Sirchmunk is an AI-powered search engine designed for enterprise environments.</p>
+
+        <div class="note">
+            <strong>Note:</strong> This documentation covers version 1.0.0 and above.
+        </div>
+
+        <h2>Quick Start Guide</h2>
+        <ol>
+            <li>Install the package: <code>pip install sirchmunk</code></li>
+            <li>Initialize: <code>sirchmunk init</code></li>
+            <li>Configure your LLM API key</li>
+            <li>Start searching: <code>sirchmunk search "your query"</code></li>
+        </ol>
+
+        <h2>Architecture Overview</h2>
+        <pre><code>┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   User      │────▶│  API Server  │────▶│   Search    │
+│   Query     │     │   (FastAPI)  │     │   Engine    │
+└─────────────┘     └──────────────┘     └─────────────┘
+                                              │
+                              ┌───────────────┼───────────────┐
+                              ▼               ▼               ▼
+                       ┌──────────┐   ┌──────────┐   ┌──────────┐
+                       │  File    │   │ Knowledge│   │   LLM    │
+                       │  Scanner │   │  Store   │   │  Client  │
+                       └──────────┘   └──────────┘   └──────────┘</code></pre>
+
+        <div class="warning">
+            <strong>Warning:</strong> Always ensure your API keys are stored securely and never committed to version control.
+        </div>
+
+        <h2>Supported File Formats</h2>
+        <ul>
+            <li><strong>Documents:</strong> PDF, DOCX, PPTX, XLSX</li>
+            <li><strong>Text:</strong> TXT, MD, RTF</li>
+            <li><strong>Code:</strong> PY, JS, TS, JAVA, GO, RS</li>
+            <li><strong>Web:</strong> HTML, XML, JSON</li>
+            <li><strong>Images:</strong> PNG, JPG (OCR support)</li>
+        </ul>
+
+        <h2>Contact</h2>
+        <p>For support, email: <a href="mailto:support@sirchmunk.com">support@sirchmunk.com</a></p>
+    </div>
+</body>
+</html>

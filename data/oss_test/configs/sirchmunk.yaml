@@ -1,0 +1,102 @@
+# Sirchmunk Configuration
+# This file is used to configure the Sirchmunk search engine
+
+# LLM Settings
+llm:
+  # Base URL for LLM API (OpenAI-compatible endpoint)
+  base_url: "https://api.openai.com/v1"
+
+  # API Key (use environment variable LLM_API_KEY in production)
+  api_key: "${LLM_API_KEY}"
+
+  # Model name
+  model_name: "gpt-4-turbo-preview"
+
+  # Request timeout in seconds
+  timeout: 60.0
+
+  # Maximum tokens for response
+  max_tokens: 4000
+
+  # Temperature for generation (0.0-1.0)
+  temperature: 0.7
+
+# Search Settings
+search:
+  # Default search mode (FAST, DEEP, FILENAME_ONLY)
+  default_mode: "FAST"
+
+  # Maximum directory depth to search
+  max_depth: 5
+
+  # Number of top files to return
+  top_k_files: 10
+
+  # Grep operation timeout in seconds
+  grep_timeout: 60.0
+
+  # Maximum file size to process (in MB)
+  max_file_size_mb: 50
+
+# Cluster Settings
+cluster:
+  # Enable knowledge cluster reuse with embeddings
+  enable_reuse: true
+
+  # Similarity threshold for cluster reuse (0.0-1.0)
+  similarity_threshold: 0.85
+
+  # Number of similar clusters to retrieve
+  top_k_clusters: 3
+
+  # Maximum queries per cluster (FIFO eviction)
+  max_queries_per_cluster: 5
+
+# Cache Settings
+cache:
+  # Enable caching
+  enabled: true
+
+  # Cache directory (relative to work path)
+  directory: ".cache"
+
+  # Cache TTL in hours
+  ttl_hours: 24
+
+  # Maximum cache size in GB
+  max_size_gb: 10
+
+# Logging Settings
+logging:
+  # Log level (DEBUG, INFO, WARNING, ERROR)
+  level: "INFO"
+
+  # Log file path
+  file: "logs/sirchmunk.log"
+
+  # Enable console logging
+  console: true
+
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# OSS Settings (Optional - for cloud storage)
+oss:
+  # Enable OSS storage
+  enabled: false
+
+  # OSS Bucket name
+  bucket: "sirchmunk-data"
+
+  # OSS Endpoint
+  endpoint: "oss-cn-hangzhou-internal.aliyuncs.com"
+
+  # Access credentials (use environment variables in production)
+  access_key_id: "${OSS_ACCESS_KEY_ID}"
+  access_key_secret: "${OSS_ACCESS_KEY_SECRET}"
+
+  # Cache settings for OSS
+  cache:
+    local_disk_size_gb: 200
+    cache_ratio: 0.8
+    hot_file_ratio: 0.7

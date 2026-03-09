@@ -1,0 +1,158 @@
+================================================================================
+                    SIRCHMUNK INC.
+                    BOARD MEETING MINUTES
+================================================================================
+
+Meeting Date: January 10, 2025
+Time: 10:00 AM - 12:30 PM PST
+Location: Conference Room A + Zoom
+
+ATTENDEES:
+----------
+Board Members:
+  - Alex Chen (CEO, Board Chair)
+  - Dr. Sarah Williams (Independent Director)
+  - Michael Zhang (Sequoia Capital)
+  - Jennifer Lee (a16z)
+  - Robert Kim (Independent Director)
+
+Executive Team:
+  - Alex Chen (CEO)
+  - Stephanie White (CFO)
+  - Michael Chen (CTO)
+  - Jessica Brown (VP Sales)
+
+Absent: None
+
+================================================================================
+                         AGENDA ITEMS
+================================================================================
+
+1. CALL TO ORDER
+----------------
+Chair Chen called the meeting to order at 10:05 AM.
+Quorum was established with all 5 board members present.
+
+2. APPROVAL OF PREVIOUS MINUTES
+-------------------------------
+Motion to approve December 2024 board meeting minutes.
+
+  Moved: Dr. Williams
+  Seconded: Robert Kim
+  Result: UNANIMOUSLY APPROVED
+
+3. CEO UPDATE
+-------------
+Alex Chen provided the following updates:
+
+a) Company Performance
+   - Q4 2024 revenue of $4.2M exceeded projections by 12%
+   - Full year revenue of $13.8M, up 43% YoY
+   - Customer count grew from 145 to 234 (61% growth)
+
+b) Product Highlights
+   - Mobile apps launched with 15K+ downloads
+   - Voice search beta showing 94% accuracy
+   - OSS Hybrid Architecture well-received by enterprise customers
+
+c) Strategic Initiatives
+   - Series B fundraising underway, targeting $25-30M
+   - EU expansion planned for Q2 2025
+   - London office search in progress
+
+Board Discussion:
+- Michael Zhang asked about competitive landscape
+- Alex noted differentiation in OSS integration and cache performance
+- Jennifer Lee suggested accelerating APAC timeline
+
+4. FINANCIAL REVIEW
+-------------------
+Stephanie White presented Q4 2024 financials:
+
+Key Metrics:
+  - Revenue: $4.2M (+45% YoY)
+  - Gross Margin: 81.2%
+  - Burn Rate: $180K/month
+  - Cash Runway: 22 months
+
+2025 Budget Proposal:
+  - Revenue Target: $30M
+  - R&D Budget: $12M
+  - Sales & Marketing: $9M
+  - Planned Headcount: 85
+
+Motion to approve 2025 budget.
+
+  Moved: Stephanie White
+  Seconded: Michael Zhang
+  Result: APPROVED (4-1, Robert Kim abstained)
+
+5. PEOPLE & CULTURE
+-------------------
+Lauren Taylor (via pre-recorded presentation):
+
+Headcount Summary:
+  - Current: 45 employees
+  - Q4 Hires: 8
+  - Q1 Planned: 10
+  - Open Positions: 12
+
+Engagement Metrics:
+  - eNPS: 52 (industry avg: 35)
+  - Retention Rate: 94%
+  - Diversity: 42% women, 38% underrepresented minorities
+
+Board Discussion:
+- Board praised culture metrics
+- Jennifer Lee suggested executive hiring prioritization
+
+6. APPROVAL OF 2025 STRATEGIC PLAN
+----------------------------------
+Alex Chen presented the 2025 strategic plan (see document:
+archives/2025/strategy/strategic_plan_2025.md)
+
+Key Strategic Pillars:
+  1. Product Excellence
+  2. Market Expansion
+  3. Team Growth
+  4. Technology Innovation
+
+Motion to approve 2025 strategic plan.
+
+  Moved: Dr. Williams
+  Seconded: Jennifer Lee
+  Result: UNANIMOUSLY APPROVED
+
+7. EXECUTIVE SESSION
+--------------------
+Board entered executive session at 12:00 PM.
+Only independent directors present.
+
+Topics Discussed:
+  - CEO performance review
+  - Compensation committee recommendations
+  - Succession planning update
+
+8. ADJOURNMENT
+--------------
+Meeting adjourned at 12:30 PM PST.
+
+Next Meeting: April 10, 2025
+
+================================================================================
+                         ACTION ITEMS
+================================================================================
+
+| Item | Owner | Deadline | Status |
+|------|-------|----------|--------|
+| Series B update | Alex Chen | Feb 15 | Open |
+| EU expansion plan | Jessica Brown | Mar 1 | Open |
+| London office proposal | Lauren Taylor | Feb 28 | Open |
+| Technical deep-diff deck | Michael Chen | Mar 15 | Open |
+
+================================================================================
+
+Minutes submitted by: Emily Chen, Corporate Secretary
+Date: January 12, 2025
+
+*CONFIDENTIAL - BOARD EYES ONLY*

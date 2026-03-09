@@ -1,0 +1,21 @@
+id,first_name,last_name,email,department,role,salary,start_date,status
+1,John,Smith,john.smith@sirchmunk.com,Engineering,Senior Engineer,145000,2022-03-15,active
+2,Sarah,Johnson,sarah.johnson@sirchmunk.com,Engineering,Staff Engineer,165000,2021-08-01,active
+3,Michael,Chen,michael.chen@sirchmunk.com,Engineering,Principal Engineer,195000,2020-05-20,active
+4,Emily,Davis,emily.davis@sirchmunk.com,Engineering,Junior Engineer,95000,2024-01-10,active
+5,David,Williams,david.williams@sirchmunk.com,Engineering,Senior Engineer,150000,2022-07-22,active
+6,Jessica,Brown,jessica.brown@sirchmunk.com,Sales,Sales Director,130000,2021-11-03,active
+7,Christopher,Miller,christopher.miller@sirchmunk.com,Sales,Account Executive,85000,2023-02-14,active
+8,Amanda,Wilson,amanda.wilson@sirchmunk.com,Sales,Sales Development Rep,65000,2024-03-01,active
+9,Matthew,Moore,matthew.moore@sirchmunk.com,Operations,Ops Manager,110000,2022-01-17,active
+10,Lauren,Taylor,lauren.taylor@sirchmunk.com,Operations,HR Specialist,75000,2023-06-05,active
+11,Andrew,Anderson,andrew.anderson@sirchmunk.com,Engineering,Senior Engineer,148000,2021-09-12,active
+12,Megan,Thomas,megan.thomas@sirchmunk.com,Marketing,Marketing Director,125000,2022-04-25,active
+13,Joshua,Jackson,joshua.jackson@sirchmunk.com,Engineering,Staff Engineer,170000,2020-10-30,active
+14,Stephanie,White,stephanie.white@sirchmunk.com,Finance,CFO,200000,2021-02-08,active
+15,Daniel,Harris,daniel.harris@sirchmunk.com,Engineering,Junior Engineer,92000,2024-02-20,active
+16,Nicole,Martin,nicole.martin@sirchmunk.com,Engineering,Senior Engineer,147000,2022-08-14,active
+17,Ryan,Thompson,ryan.thompson@sirchmunk.com,Sales,Account Executive,88000,2023-04-11,active
+18,Kevin,Garcia,kevin.garcia@sirchmunk.com,Engineering,Principal Engineer,190000,2019-12-01,active
+19,Rachel,Martinez,rachel.martinez@sirchmunk.com,Operations,Office Manager,70000,2023-07-19,active
+20,Brandon,Robinson,brandon.robinson@sirchmunk.com,Engineering,Staff Engineer,168000,2021-04-26,active

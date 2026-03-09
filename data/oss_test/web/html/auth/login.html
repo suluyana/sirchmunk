@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication Portal - Sirchmunk</title>
+    <meta name="description" content="Secure authentication for Sirchmunk services">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="/login">Login</a> |
+            <a href="/register">Register</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="login-form">
+            <h1>Login to Sirchmunk</h1>
+            <form action="/api/auth/login" method="POST">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required minlength="8">
+
+                <button type="submit">Sign In</button>
+            </form>
+
+            <p>Forgot password? <a href="/reset">Reset here</a></p>
+        </section>
+
+        <section id="oauth-providers">
+            <h2>Or login with</h2>
+            <button class="oauth-btn google">Google</button>
+            <button class="oauth-btn github">GitHub</button>
+            <button class="oauth-btn microsoft">Microsoft</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Sirchmunk Inc. All rights reserved.</p>
+        <p>
+            <a href="/privacy">Privacy Policy</a> |
+            <a href="/terms">Terms of Service</a>
+        </p>
+    </footer>
+
+    <script>
+        // OAuth callback handler
+        function handleOAuthCallback(provider, token) {
+            localStorage.setItem('oauth_provider', provider);
+            localStorage.setItem('access_token', token);
+            window.location.href = '/dashboard';
+        }
+
+        // Session check
+        function checkSession() {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                fetch('/api/auth/verify', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.href = '/dashboard';
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkSession);
+    </script>
+</body>
+</html>
